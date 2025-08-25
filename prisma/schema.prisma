@@ -1,0 +1,53 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Problem {
+  id               Int      @id // LeetCode problem number (frontend_question_id)
+  title            String
+  titleSlug        String   @unique
+  difficulty       Int      // 1: Easy, 2: Medium, 3: Hard
+  
+  submissions      Submission[]
+  
+  @@index([titleSlug])
+  @@index([difficulty])
+}
+
+model Submission {
+  id              String   @id @default(cuid())
+  problemId       Int
+  problem         Problem  @relation(fields: [problemId], references: [id])
+  
+  // Core tracking fields
+  solvedAt        DateTime @default(now())
+  timeSpent       Int?     // in minutes
+  personalDifficulty Int?  // 1-5 scale: 1=very easy, 5=very hard
+  
+  // Personal notes and solution
+  notes           String?  @db.Text
+  solution        String?  @db.Text
+  language        String   @default("javascript")
+  
+  // Review tracking for spaced repetition
+  lastReviewedAt  DateTime?
+  nextReviewDate  DateTime?
+  reviewCount     Int      @default(0)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([nextReviewDate])
+  @@index([solvedAt])
+}
