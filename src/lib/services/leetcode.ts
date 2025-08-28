@@ -1,5 +1,3 @@
-import axios from 'axios';
-
 interface LeetCodeProblem {
   stat: {
     question_id: number;
@@ -17,8 +15,6 @@ interface LeetCodeProblem {
 
 interface LeetCodeResponse {
   stat_status_pairs: LeetCodeProblem[];
-  num_total: number;
-  num_solved: number;
 }
 
 class LeetCodeService {
@@ -35,19 +31,15 @@ class LeetCodeService {
     }
 
     try {
-      // Note: In production, you might need to proxy this through your API
-      // to avoid CORS issues
-      const response = await axios.get<LeetCodeResponse>(
-        '/api/leetcode-proxy' // We'll create this endpoint
-      );
+      const response = await fetch('/api/leetcode-proxy');
+      const data: LeetCodeResponse = await response.json();
       
-      this.problems = response.data.stat_status_pairs;
+      this.problems = data.stat_status_pairs || [];
       this.lastFetched = new Date();
       
       return this.problems;
     } catch (error) {
       console.error('Failed to fetch LeetCode problems:', error);
-      // Return cached data if available
       return this.problems;
     }
   }
@@ -55,17 +47,29 @@ class LeetCodeService {
   async searchProblem(query: string): Promise<LeetCodeProblem | null> {
     const problems = await this.fetchProblems();
     
-    // Search by number or title
+    if (!problems || problems.length === 0) {
+      return null;
+    }
+
+    // Clean the query
+    const cleanQuery = query.trim().toLowerCase();
+    
+    // First, check if it's a number (for direct problem ID search)
+    const queryAsNumber = parseInt(cleanQuery);
+    if (!isNaN(queryAsNumber)) {
+      // Search by frontend_question_id (the problem number users see)
+      const problemById = problems.find(p => p.stat.frontend_question_id === queryAsNumber);
+      if (problemById) {
+        return problemById;
+      }
+    }
+    
+    // If not found by ID or not a number, search by title/slug
     const problem = problems.find(p => {
-      const titleMatch = p.stat.question__title
-        .toLowerCase()
-        .includes(query.toLowerCase());
-      const slugMatch = p.stat.question__title_slug
-        .toLowerCase()
-        .includes(query.toLowerCase());
-      const idMatch = p.stat.frontend_question_id.toString() === query;
+      const title = p.stat.question__title.toLowerCase();
+      const slug = p.stat.question__title_slug.toLowerCase();
       
-      return titleMatch || slugMatch || idMatch;
+      return title.includes(cleanQuery) || slug.includes(cleanQuery);
     });
 
     return problem || null;
@@ -73,3 +77,4 @@ class LeetCodeService {
 }
 
 export const leetcodeService = new LeetCodeService();
+export type { LeetCodeProblem };
