@@ -2,7 +2,8 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { Navigation } from '@/components/layout/Navigation'
-import { Sonner } from '@/components/ui/sonner'
+import { AuthSessionProvider } from '@/components/providers/SessionProvider'
+import { Toaster } from 'sonner'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -19,11 +20,22 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Navigation />
-        <main className="container mx-auto px-4 py-8">
-          {children}
-        </main>
-        <Sonner />
+        <AuthSessionProvider>
+          <Navigation />
+          <main className="container mx-auto px-4 py-8">
+            {children}
+          </main>
+          <Toaster 
+            position="bottom-right"
+            toastOptions={{
+              style: {
+                background: 'hsl(var(--background))',
+                color: 'hsl(var(--foreground))',
+                border: '1px solid hsl(var(--border))',
+              },
+            }}
+          />
+        </AuthSessionProvider>
       </body>
     </html>
   )
