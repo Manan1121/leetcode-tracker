@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CalendarDays, Brain, Clock, TrendingUp } from 'lucide-react';
+import { CalendarDays, Brain, Clock, TrendingUp, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface Submission {
   id: string;
@@ -13,6 +14,8 @@ interface Submission {
   timeSpent: number | null;
   personalDifficulty: number | null;
   notes: string | null;
+  nextReviewDate: string | null;
+  reviewCount: number;
   problem: {
     id: number;
     title: string;
@@ -22,19 +25,26 @@ interface Submission {
 
 export function DashboardStats() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [dueReviews, setDueReviews] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchSubmissions();
+    fetchData();
   }, []);
 
-  const fetchSubmissions = async () => {
+  const fetchData = async () => {
     try {
-      const response = await fetch('/api/submissions');
-      const data = await response.json();
-      setSubmissions(data);
+      // Fetch user's submissions
+      const submissionsResponse = await fetch('/api/submissions');
+      const submissionsData = await submissionsResponse.json();
+      setSubmissions(submissionsData);
+
+      // Fetch due reviews
+      const reviewsResponse = await fetch('/api/reviews');
+      const reviewsData = await reviewsResponse.json();
+      setDueReviews(reviewsData);
     } catch (error) {
-      console.error('Failed to fetch submissions:', error);
+      console.error('Failed to fetch data:', error);
     } finally {
       setLoading(false);
     }
@@ -93,6 +103,25 @@ export function DashboardStats() {
 
   return (
     <div className="space-y-6">
+      {/* Review Alert */}
+      {dueReviews.length > 0 && (
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className="flex items-center justify-between">
+            <span>
+              You have <strong>{dueReviews.length} problem{dueReviews.length > 1 ? 's' : ''}</strong> due for review!
+              Reviewing helps strengthen your memory.
+            </span>
+            <Link href="/reviews">
+              <Button size="sm" className="ml-4">
+                <Brain className="mr-2 h-4 w-4" />
+                Start Review
+              </Button>
+            </Link>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
@@ -123,12 +152,14 @@ export function DashboardStats() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg Difficulty</CardTitle>
+            <CardTitle className="text-sm font-medium">Reviews Due</CardTitle>
             <Brain className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{avgDifficulty}/5</div>
-            <p className="text-xs text-muted-foreground">Personal difficulty rating</p>
+            <div className="text-2xl font-bold">{dueReviews.length}</div>
+            <p className="text-xs text-muted-foreground">
+              Spaced repetition active
+            </p>
           </CardContent>
         </Card>
 
@@ -185,6 +216,11 @@ export function DashboardStats() {
                         {submission.personalDifficulty && (
                           <span>
                             Difficulty: {submission.personalDifficulty}/5 {getPersonalDifficultyEmoji(submission.personalDifficulty)}
+                          </span>
+                        )}
+                        {submission.reviewCount > 0 && (
+                          <span className="text-green-600">
+                            ✓ Reviewed {submission.reviewCount}x
                           </span>
                         )}
                       </div>

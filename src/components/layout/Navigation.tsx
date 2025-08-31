@@ -37,6 +37,9 @@ export function Navigation() {
                 <Link href="/dashboard" className="text-sm font-medium hover:text-primary">
                   Dashboard
                 </Link>
+                <Link href="/reviews" className="text-sm font-medium hover:text-primary">
+                  Reviews
+                </Link>
                 <Link href="/problems" className="text-sm font-medium hover:text-primary">
                   Add Problem
                 </Link>

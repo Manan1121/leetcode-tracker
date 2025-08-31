@@ -21,6 +21,12 @@ model User {
   sessions      Session[]
   submissions   Submission[]
   
+  emailNotifications Boolean @default(true)
+  reviewHour        Int     @default(9)  // Hour of day to send reminders (0-23)
+  timezone          String  @default("America/New_York")
+  
+  emailLogs         EmailLog[]
+
   @@index([email])
 }
 
@@ -89,15 +95,48 @@ model Submission {
   solution        String?  @db.Text
   language        String   @default("javascript")
   
+  // Spaced repetition fields
   lastReviewedAt  DateTime?
   nextReviewDate  DateTime?
   reviewCount     Int      @default(0)
+  easeFactor      Float    @default(2.5) // For SM-2 algorithm
+  interval        Int      @default(1)   // Days until next review
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  
+  reviews         Review[] // Track individual reviews
   
   @@unique([userId, problemId])
   @@index([nextReviewDate])
   @@index([solvedAt])
   @@index([userId])
+}
+
+model Review {
+  id           String   @id @default(cuid())
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  
+  reviewedAt   DateTime @default(now())
+  difficulty   Int      // 1-5: How hard was it to recall?
+  timeSpent    Int?     // Minutes spent on review
+  notes        String?  // Additional notes from review
+  
+  @@index([submissionId])
+  @@index([reviewedAt])
+}
+
+model EmailLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type      String   // "review_reminder", "weekly_summary", etc.
+  sentAt    DateTime @default(now())
+  status    String   // "sent", "failed", "bounced"
+  metadata  Json?    // Store email details
+  
+  @@index([userId])
+  @@index([sentAt])
 }
