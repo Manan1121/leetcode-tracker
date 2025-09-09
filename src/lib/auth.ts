@@ -59,6 +59,14 @@ export const authOptions: NextAuthOptions = {
     })
   ],
   callbacks: {
+    async signIn({ user, account, profile }) {
+      // Allow automatic registration for Google OAuth
+      if (account?.provider === "google") {
+        return true;
+      }
+      // For credentials, user must already exist (handled in authorize)
+      return true;
+    },
     async jwt({ token, user, account, trigger, session }) {
       if (user) {
         token.id = user.id;
