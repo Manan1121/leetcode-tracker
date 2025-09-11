@@ -30,7 +30,7 @@ export function ProblemSearch() {
 
   const handleSearch = async () => {
     if (!query.trim()) {
-      toast.error('Please enter a problem name or number');
+      toast.error('Please enter a problem name or number (Number Recomended)');
       return;
     }
 
