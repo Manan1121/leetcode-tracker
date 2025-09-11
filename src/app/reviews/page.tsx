@@ -75,9 +75,16 @@ export default function ReviewsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="mb-4">
-              Your next reviews will appear here when they&apos;re due. Keep solving new problems to build your review queue!
-            </p>
+            <div className="space-y-3">
+              <p>
+                Your next reviews will appear here when they&apos;re due. Keep solving new problems to build your review queue!
+              </p>
+              <div className="p-3 bg-muted/50 rounded-lg">
+                <p className="text-sm text-muted-foreground">
+                  <strong>💡 How reviews work:</strong> After solving a problem, review it once to start the spaced repetition schedule. Problems will then appear here based on memory retention intervals.
+                </p>
+              </div>
+            </div>
             <div className="flex gap-4">
               <Link href="/problems">
                 <Button>Solve New Problem</Button>

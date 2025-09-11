@@ -348,9 +348,12 @@ export function DashboardStats() {
             {submissions.filter(
               (s) => s.nextReviewDate && new Date(s.nextReviewDate) > new Date()
             ).length === 0 && (
-              <p className="text-center py-4 text-muted-foreground text-sm">
-                No upcoming reviews scheduled
-              </p>
+              <div className="text-center py-4 text-muted-foreground text-sm space-y-2">
+                <p>No upcoming reviews scheduled</p>
+                <p className="text-xs">
+                  💡 Problems appear here after you review them once. Start with problems due for review to build your schedule!
+                </p>
+              </div>
             )}
           </div>
         </CardContent>
