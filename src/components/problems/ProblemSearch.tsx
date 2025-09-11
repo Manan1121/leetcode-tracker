@@ -115,7 +115,7 @@ export function ProblemSearch() {
       <CardHeader>
         <CardTitle>Add Solved Problem</CardTitle>
         <CardDescription>
-          Search for a LeetCode problem by name or number
+          Search for a LeetCode problem by name or number (Number Recomended)
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
