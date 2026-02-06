@@ -1,21 +1,20 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { signIn } from 'next-auth/react';
+import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { GoogleButton } from '@/components/auth/GoogleButton';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Loader2, Chrome } from 'lucide-react';
-import { GoogleButton } from '@/components/auth/GoogleButton';
 
 export default function LoginPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -34,50 +33,41 @@ export default function LoginPage() {
 
       if (result?.error) {
         toast.error('Invalid email or password');
-      } else {
-        toast.success('Welcome back!');
-        router.push('/dashboard');
-        router.refresh();
+        return;
       }
-    } catch (error) {
-      toast.error('An error occurred. Please try again.');
+
+      toast.success('Welcome back');
+      router.push('/dashboard');
+      router.refresh();
+    } catch {
+      toast.error('Sign in failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    setIsGoogleLoading(true);
-    try {
-      await signIn('google', { callbackUrl: '/dashboard' });
-    } catch (error) {
-      toast.error('Failed to sign in with Google');
-      setIsGoogleLoading(false);
-    }
-  };
-
   return (
-    <div className="container max-w-md mx-auto mt-20">
-      <Card>
-        <CardHeader>
-          <CardTitle>Welcome Back</CardTitle>
-          <CardDescription>
-            Sign in to your account to continue tracking your LeetCode progress
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Google Sign In Button */}
-        <GoogleButton text="Continue with Google" />
+    <div className="mx-auto mt-8 w-full max-w-md sm:mt-12">
+      <div className="mb-6 space-y-2 text-center">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Account</p>
+        <h1 className="text-3xl">Sign In</h1>
+        <p className="text-sm text-muted-foreground">Continue your problem tracking workflow.</p>
+      </div>
 
+      <Card>
+        <CardHeader className="space-y-1">
+          <CardTitle>Welcome back</CardTitle>
+          <CardDescription>Use Google or email to access your dashboard.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <GoogleButton text="Continue with Google" disabled={isLoading} />
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
+              <span className="w-full border-t border-border/80" />
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                Or continue with email
-              </span>
+            <div className="relative flex justify-center text-xs uppercase tracking-[0.12em]">
+              <span className="bg-card px-3 text-muted-foreground">or email</span>
             </div>
           </div>
 
@@ -91,7 +81,7 @@ export default function LoginPage() {
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
-                disabled={isLoading || isGoogleLoading}
+                disabled={isLoading}
               />
             </div>
 
@@ -103,18 +93,14 @@ export default function LoginPage() {
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
-                disabled={isLoading || isGoogleLoading}
+                disabled={isLoading}
               />
             </div>
 
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={isLoading || isGoogleLoading}
-            >
+            <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                   Signing in...
                 </>
               ) : (
@@ -123,12 +109,12 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <div className="text-center text-sm">
-            Don&apos;t have an account?{' '}
-            <Link href="/register" className="text-primary hover:underline">
-              Sign up
+          <p className="text-center text-sm text-muted-foreground">
+            New here?{' '}
+            <Link href="/register" className="font-semibold text-foreground hover:underline">
+              Create an account
             </Link>
-          </div>
+          </p>
         </CardContent>
       </Card>
     </div>
