@@ -1,79 +1,99 @@
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, Brain, Clock, TrendingUp } from 'lucide-react';
+import Link from "next/link";
+import { ArrowRight, Brain, ChartColumnBig, Clock3, NotebookPen } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
+const features = [
+  {
+    title: "Capture Every Solve",
+    description: "Store time spent, your own difficulty rating, and notes right after each submission.",
+    icon: NotebookPen,
+  },
+  {
+    title: "Review at the Right Time",
+    description: "Use spaced repetition to surface questions before you forget patterns.",
+    icon: Brain,
+  },
+  {
+    title: "Stay Honest with Data",
+    description: "Track solve volume, pace, and review load in one place.",
+    icon: ChartColumnBig,
+  },
+];
 
 export default function Home() {
   return (
-    <div className="space-y-8">
-      {/* Hero Section */}
-      <div className="text-center py-12">
-        <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl">
-          LeetCode Tracker
-        </h1>
-        <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl mt-4">
-          Track your LeetCode journey, add personal notes, and master algorithms with spaced repetition.
-        </p>
-        <div className="mt-8 flex gap-4 justify-center">
-          <Link href="/problems">
-            <Button size="lg">Add Your First Problem</Button>
-          </Link>
-          <Link href="/dashboard">
-            <Button size="lg" variant="outline">View Dashboard</Button>
-          </Link>
+    <div className="space-y-12 pb-8">
+      <section className="glass-panel relative overflow-hidden px-6 py-10 sm:px-10 sm:py-12">
+        <div className="absolute -right-12 -top-12 h-36 w-36 rounded-full bg-[#ffa1161f] blur-2xl" />
+        <div className="absolute -bottom-20 left-24 h-44 w-44 rounded-full bg-[#00b8a31c] blur-3xl" />
+
+        <div className="relative max-w-3xl space-y-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+            Structured LeetCode Practice
+          </p>
+          <h1 className="text-4xl leading-tight sm:text-5xl">
+            A focused tracker for problems, reviews, and momentum.
+          </h1>
+          <p className="max-w-2xl text-base text-muted-foreground sm:text-lg">
+            Keep your workflow simple: log what you solved, revisit what matters, and build retention
+            with an interface that stays out of your way.
+          </p>
+          <div className="flex flex-wrap items-center gap-3 pt-2">
+            <Link href="/problems">
+              <Button size="lg">
+                Add Solved Problem
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+            <Link href="/dashboard">
+              <Button size="lg" variant="outline">
+                Open Dashboard
+              </Button>
+            </Link>
+          </div>
         </div>
-      </div>
+      </section>
 
-      {/* Features */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader>
-            <CheckCircle className="h-8 w-8 text-green-600 mb-2" />
-            <CardTitle>Track Progress</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CardDescription>
-              Log every problem you solve with personal difficulty ratings and time spent.
-            </CardDescription>
+      <section className="grid gap-4 sm:grid-cols-3">
+        <Card className="bg-black text-white">
+          <CardContent className="flex items-center justify-between py-6">
+            <div>
+              <p className="text-xs uppercase tracking-[0.18em] text-white/70">Focus</p>
+              <p className="mt-2 text-2xl font-semibold">Problem First</p>
+            </div>
+            <Clock3 className="h-7 w-7 text-[#ffa116]" />
           </CardContent>
         </Card>
-
         <Card>
-          <CardHeader>
-            <Brain className="h-8 w-8 text-blue-600 mb-2" />
-            <CardTitle>Personal Notes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CardDescription>
-              Add notes and solution code to remember key patterns and insights.
-            </CardDescription>
+          <CardContent className="py-6">
+            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Tone</p>
+            <p className="mt-2 text-2xl font-semibold">Clean UI</p>
+            <p className="mt-1 text-sm text-muted-foreground">Minimal chrome, strong hierarchy.</p>
           </CardContent>
         </Card>
-
         <Card>
-          <CardHeader>
-            <Clock className="h-8 w-8 text-purple-600 mb-2" />
-            <CardTitle>Spaced Repetition</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CardDescription>
-              Review problems at optimal intervals to strengthen your understanding.
-            </CardDescription>
+          <CardContent className="py-6">
+            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Method</p>
+            <p className="mt-2 text-2xl font-semibold">Spaced Recall</p>
+            <p className="mt-1 text-sm text-muted-foreground">Practice timing modeled for memory.</p>
           </CardContent>
         </Card>
+      </section>
 
-        <Card>
-          <CardHeader>
-            <TrendingUp className="h-8 w-8 text-orange-600 mb-2" />
-            <CardTitle>Track Analytics</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CardDescription>
-              Visualize your progress with detailed statistics and insights.
-            </CardDescription>
-          </CardContent>
-        </Card>
-      </div>
+      <section className="grid gap-4 md:grid-cols-3">
+        {features.map((feature) => (
+          <Card key={feature.title} className="h-full">
+            <CardHeader>
+              <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border/80 bg-white">
+                <feature.icon className="h-5 w-5" />
+              </div>
+              <CardTitle className="text-xl">{feature.title}</CardTitle>
+              <CardDescription>{feature.description}</CardDescription>
+            </CardHeader>
+          </Card>
+        ))}
+      </section>
     </div>
   );
 }

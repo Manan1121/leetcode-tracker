@@ -1,12 +1,9 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
 import './globals.css'
 import { Navigation } from '@/components/layout/Navigation'
 import { AuthSessionProvider } from '@/components/providers/SessionProvider'
 import { Toaster } from 'sonner'
 import { Analytics } from '@vercel/analytics/react'
-
-const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'LeetCode Tracker',
@@ -33,19 +30,20 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className="min-h-screen bg-background font-sans text-foreground antialiased">
         <AuthSessionProvider>
           <Navigation />
-          <main className="container mx-auto px-4 py-8">
+          <main className="mx-auto w-full max-w-6xl px-4 pb-14 pt-10 sm:px-6 lg:px-8">
             {children}
           </main>
-          <Toaster 
+          <Toaster
             position="bottom-right"
             toastOptions={{
               style: {
-                background: 'hsl(var(--background))',
-                color: 'hsl(var(--foreground))',
-                border: '1px solid hsl(var(--border))',
+                background: 'var(--card)',
+                color: 'var(--card-foreground)',
+                border: '1px solid var(--border)',
+                borderRadius: '14px',
               },
             }}
           />
