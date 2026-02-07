@@ -23,12 +23,21 @@ export async function GET() {
   }
 
   try {
+    const now = new Date();
+    const oneDayAgo = new Date(now);
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+
     const dueSubmissions = await prisma.submission.findMany({
       where: {
         userId: session.user.id,
         OR: [
-          { nextReviewDate: { lte: new Date() } },
-          { nextReviewDate: null }
+          { nextReviewDate: { lte: now } },
+          {
+            AND: [
+              { nextReviewDate: null },
+              { solvedAt: { lte: oneDayAgo } }
+            ]
+          }
         ]
       },
       include: {

@@ -36,7 +36,7 @@ export function ProblemSearch() {
   });
 
   const [formData, setFormData] = useState({
-    timeSpent: '',
+    timeSpent: '30',
     personalDifficulty: '3',
     notes: '',
     solution: '',
