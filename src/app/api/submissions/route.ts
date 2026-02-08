@@ -55,6 +55,9 @@ export async function POST(request: NextRequest) {
       language 
     } = body;
 
+    const firstReviewDate = new Date();
+    firstReviewDate.setDate(firstReviewDate.getDate() + 1);
+
     // First, upsert the problem (create if doesn't exist)
     const problem = await prisma.problem.upsert({
       where: { id: problemId },
@@ -68,34 +71,48 @@ export async function POST(request: NextRequest) {
     });
 
     // Then create or update the submission for this user
-    const submission = await prisma.submission.upsert({
+    const existingSubmission = await prisma.submission.findUnique({
       where: {
         userId_problemId: {
           userId: session.user.id,
           problemId: problem.id,
         },
       },
-      update: {
-        timeSpent,
-        personalDifficulty,
-        notes,
-        solution,
-        language: language || 'javascript',
-        solvedAt: new Date(),
-      },
-      create: {
-        userId: session.user.id,
-        problemId: problem.id,
-        timeSpent,
-        personalDifficulty,
-        notes,
-        solution,
-        language: language || 'javascript',
-      },
-      include: {
-        problem: true,
-      },
     });
+
+    const submission = existingSubmission
+      ? await prisma.submission.update({
+          where: { id: existingSubmission.id },
+          data: {
+            timeSpent,
+            personalDifficulty,
+            notes,
+            solution,
+            language: language || 'javascript',
+            solvedAt: new Date(),
+            // If this record was old and unscheduled, start first review tomorrow.
+            nextReviewDate: existingSubmission.nextReviewDate ?? firstReviewDate,
+          },
+          include: {
+            problem: true,
+          },
+        })
+      : await prisma.submission.create({
+          data: {
+            userId: session.user.id,
+            problemId: problem.id,
+            timeSpent,
+            personalDifficulty,
+            notes,
+            solution,
+            language: language || 'javascript',
+            // First review starts next day; not immediately after solving.
+            nextReviewDate: firstReviewDate,
+          },
+          include: {
+            problem: true,
+          },
+        });
 
     return NextResponse.json(submission);
   } catch (error) {
