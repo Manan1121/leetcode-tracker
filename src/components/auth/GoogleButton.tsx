@@ -5,7 +5,7 @@ import { signIn } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { FcGoogle } from 'react-icons/fc'; // 1. Import the icon
+import { FcGoogle } from 'react-icons/fc';
 
 interface GoogleButtonProps {
   text?: string;
@@ -24,7 +24,7 @@ export function GoogleButton({
     setIsLoading(true);
     try {
       await signIn('google', { callbackUrl });
-    } catch (error) {
+    } catch {
       toast.error('Failed to connect with Google');
       setIsLoading(false);
     }
@@ -34,7 +34,7 @@ export function GoogleButton({
     <Button
       type="button"
       variant="outline"
-      className="w-full"
+      className="h-11 w-full"
       onClick={handleGoogleSignIn}
       disabled={isLoading || disabled}
     >
@@ -45,7 +45,6 @@ export function GoogleButton({
         </>
       ) : (
         <>
-          {/* 2. Use the imported icon component */}
           <FcGoogle className="mr-2 h-4 w-4" />
           {text}
         </>

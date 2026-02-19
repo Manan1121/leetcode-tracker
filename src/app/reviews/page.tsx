@@ -1,22 +1,18 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { Brain, Trophy } from 'lucide-react';
+import { SubmissionWithProblemAndReviews } from '@/types';
 import { ReviewCard } from '@/components/reviews/ReviewCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Brain, Calendar, TrendingUp, Trophy } from 'lucide-react';
-import Link from 'next/link';
-import { SubmissionWithProblemAndReviews } from '@/types';
 
 export default function ReviewsPage() {
   const [submissions, setSubmissions] = useState<SubmissionWithProblemAndReviews[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
-    totalDue: 0,
-    completedToday: 0,
-    streak: 0
-  });
+  const [completedToday, setCompletedToday] = useState(0);
 
   useEffect(() => {
     fetchDueReviews();
@@ -28,7 +24,7 @@ export default function ReviewsPage() {
       if (response.ok) {
         const data = await response.json();
         setSubmissions(data);
-        setStats(prev => ({ ...prev, totalDue: data.length }));
+        setCurrentIndex(0);
       }
     } catch (error) {
       console.error('Failed to fetch reviews:', error);
@@ -38,24 +34,20 @@ export default function ReviewsPage() {
   };
 
   const handleReviewed = () => {
-    setStats(prev => ({ ...prev, completedToday: prev.completedToday + 1 }));
-    
+    setCompletedToday((prev) => prev + 1);
     if (currentIndex < submissions.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-    } else {
-      // All reviews complete
-      fetchDueReviews(); // Refresh the list
+      setCurrentIndex((prev) => prev + 1);
+      return;
     }
+    fetchDueReviews();
   };
 
   if (loading) {
     return (
-      <div className="container max-w-4xl mx-auto py-8">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <Brain className="h-12 w-12 animate-pulse mx-auto mb-4 text-primary" />
-            <p className="text-muted-foreground">Loading your reviews...</p>
-          </div>
+      <div className="flex min-h-[360px] items-center justify-center">
+        <div className="space-y-3 text-center">
+          <Brain className="mx-auto h-10 w-10 animate-pulse text-[#ffa116]" />
+          <p className="text-sm text-muted-foreground">Loading your review queue...</p>
         </div>
       </div>
     );
@@ -63,34 +55,25 @@ export default function ReviewsPage() {
 
   if (submissions.length === 0) {
     return (
-      <div className="container max-w-4xl mx-auto py-8">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Trophy className="h-6 w-6 text-yellow-500" />
-              No Reviews Due!
+      <div className="mx-auto w-full max-w-3xl">
+        <Card className="overflow-hidden">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-2xl">
+              <Trophy className="h-6 w-6 text-[#ffa116]" />
+              No Reviews Due
             </CardTitle>
-            <CardDescription>
-              You&apos;re all caught up! Great job staying on top of your reviews.
-            </CardDescription>
+            <CardDescription>You&apos;re caught up. Keep solving to feed your next review cycle.</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <p>
-                Your next reviews will appear here when they&apos;re due. Keep solving new problems to build your review queue!
-              </p>
-              <div className="p-3 bg-muted/50 rounded-lg">
-                <p className="text-sm text-muted-foreground">
-                  <strong>💡 How reviews work:</strong> After solving a problem, review it once to start the spaced repetition schedule. Problems will then appear here based on memory retention intervals.
-                </p>
-              </div>
+          <CardContent className="space-y-5">
+            <div className="rounded-2xl border border-border/70 bg-background/70 p-4 text-sm text-muted-foreground">
+              Reviews appear after a solved problem enters the spaced repetition timeline.
             </div>
-            <div className="flex gap-4">
+            <div className="flex flex-wrap gap-3">
               <Link href="/problems">
                 <Button>Solve New Problem</Button>
               </Link>
               <Link href="/dashboard">
-                <Button variant="outline">View Dashboard</Button>
+                <Button variant="outline">Go to Dashboard</Button>
               </Link>
             </div>
           </CardContent>
@@ -99,67 +82,62 @@ export default function ReviewsPage() {
     );
   }
 
+  const totalDue = submissions.length + completedToday;
+  const remaining = submissions.length - currentIndex;
+  const progress = totalDue > 0 ? (completedToday / totalDue) * 100 : 0;
   const currentSubmission = submissions[currentIndex];
-  const progress = ((currentIndex + stats.completedToday) / (submissions.length + stats.completedToday)) * 100;
 
   return (
-    <div className="container max-w-4xl mx-auto py-8 space-y-6">
-      {/* Progress Header */}
-      <div className="grid gap-4 md:grid-cols-3">
+    <div className="mx-auto w-full max-w-5xl space-y-6">
+      <header className="space-y-2">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Review Session</p>
+        <h1 className="text-3xl sm:text-4xl">Strengthen Recall</h1>
+        <p className="text-muted-foreground">Stay consistent and move through today&apos;s spaced repetition queue.</p>
+      </header>
+
+      <section className="grid gap-4 sm:grid-cols-3">
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Today&apos;s Progress</CardTitle>
+          <CardHeader className="pb-1">
+            <CardTitle className="text-sm text-muted-foreground">Completed</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.completedToday}/{stats.totalDue}</div>
-            <div className="w-full bg-secondary h-2 rounded-full mt-2">
-              <div 
-                className="bg-primary h-2 rounded-full transition-all"
-                style={{ width: `${progress}%` }}
+          <CardContent className="space-y-2">
+            <p className="text-3xl font-semibold">
+              {completedToday}/{totalDue}
+            </p>
+            <div className="h-2 w-full rounded-full bg-secondary">
+              <div
+                className="h-2 rounded-full bg-[#ffa116] transition-all duration-300"
+                style={{ width: `${Math.min(progress, 100)}%` }}
               />
             </div>
           </CardContent>
         </Card>
-
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Review Streak</CardTitle>
+          <CardHeader className="pb-1">
+            <CardTitle className="text-sm text-muted-foreground">Remaining</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold flex items-center gap-2">
-              {stats.streak} days
-              <TrendingUp className="h-5 w-5 text-green-500" />
-            </div>
+            <p className="text-3xl font-semibold">{remaining}</p>
+            <p className="text-xs text-muted-foreground">Current queue</p>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Remaining</CardTitle>
+        <Card className="bg-black text-white">
+          <CardHeader className="pb-1">
+            <CardTitle className="text-sm text-white/70">Goal</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{submissions.length - currentIndex}</div>
-            <p className="text-xs text-muted-foreground">problems to review</p>
+            <p className="text-xl font-semibold">Finish today&apos;s list</p>
+            <p className="text-xs text-white/70">Momentum compounds fast.</p>
           </CardContent>
         </Card>
-      </div>
+      </section>
 
-      {/* Current Review Card */}
-      {currentSubmission && (
-        <ReviewCard 
-          submission={currentSubmission} 
-          onReviewed={handleReviewed}
-        />
-      )}
+      {currentSubmission && <ReviewCard submission={currentSubmission} onReviewed={handleReviewed} />}
 
-      {/* Skip Button */}
       {submissions.length > 1 && currentIndex < submissions.length - 1 && (
         <div className="flex justify-center">
-          <Button 
-            variant="ghost" 
-            onClick={() => setCurrentIndex(currentIndex + 1)}
-          >
-            Skip for now →
+          <Button variant="ghost" onClick={() => setCurrentIndex((prev) => prev + 1)}>
+            Skip this one for now
           </Button>
         </div>
       )}

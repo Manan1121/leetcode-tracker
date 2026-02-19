@@ -1,28 +1,20 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { signIn } from "next-auth/react";
+import { Check, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { GoogleButton } from "@/components/auth/GoogleButton";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Check, X } from "lucide-react";
-import { GoogleButton } from '@/components/auth/GoogleButton';
 
 export default function RegisterPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  // We no longer need isGoogleLoading or handleGoogleSignIn, as the component handles it.
-
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -30,7 +22,6 @@ export default function RegisterPage() {
     confirmPassword: "",
   });
 
-  // Password validation states
   const [passwordChecks, setPasswordChecks] = useState({
     length: false,
     uppercase: false,
@@ -52,13 +43,13 @@ export default function RegisterPage() {
     validatePassword(password);
   };
 
-  const isPasswordValid = Object.values(passwordChecks).every((check) => check);
+  const isPasswordValid = Object.values(passwordChecks).every(Boolean);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!isPasswordValid) {
-      toast.error("Please meet all password requirements");
+      toast.error("Please satisfy all password rules");
       return;
     }
 
@@ -68,7 +59,6 @@ export default function RegisterPage() {
     }
 
     setIsLoading(true);
-
     try {
       const response = await fetch("/api/auth/register", {
         method: "POST",
@@ -81,14 +71,11 @@ export default function RegisterPage() {
       });
 
       const data = await response.json();
-
       if (!response.ok) {
         throw new Error(data.error || "Failed to create account");
       }
 
-      toast.success("Account created! Signing you in...");
-
-      // Automatically sign in after registration
+      toast.success("Account created");
       const result = await signIn("credentials", {
         email: formData.email.toLowerCase(),
         password: formData.password,
@@ -110,58 +97,47 @@ export default function RegisterPage() {
     }
   };
 
-  const PasswordCheck = ({
-    passed,
-    text,
-  }: {
-    passed: boolean;
-    text: string;
-  }) => (
-    <div
-      className={`flex items-center gap-2 text-sm ${
-        passed ? "text-green-600" : "text-muted-foreground"
-      }`}
-    >
-      {passed ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+  const PasswordCheck = ({ passed, text }: { passed: boolean; text: string }) => (
+    <div className={`flex items-center gap-2 text-xs ${passed ? "text-emerald-700" : "text-muted-foreground"}`}>
+      {passed ? <Check className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5" />}
       <span>{text}</span>
     </div>
   );
 
   return (
-    <div className="container max-w-md mx-auto mt-20">
+    <div className="mx-auto mt-8 w-full max-w-md sm:mt-12">
+      <div className="mb-6 space-y-2 text-center">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Account</p>
+        <h1 className="text-3xl">Create Account</h1>
+        <p className="text-sm text-muted-foreground">Set up your profile and start tracking deliberate practice.</p>
+      </div>
+
       <Card>
-        <CardHeader>
-          <CardTitle>Create an Account</CardTitle>
-          <CardDescription>
-            Start tracking your LeetCode progress today
-          </CardDescription>
+        <CardHeader className="space-y-1">
+          <CardTitle>Join LeetCode Tracker</CardTitle>
+          <CardDescription>Sign up with Google or email credentials.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {/* The old button is replaced with the clean, reusable component */}
+        <CardContent className="space-y-5">
           <GoogleButton text="Sign up with Google" disabled={isLoading} />
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
+              <span className="w-full border-t border-border/80" />
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                Or sign up with email
-              </span>
+            <div className="relative flex justify-center text-xs uppercase tracking-[0.12em]">
+              <span className="bg-card px-3 text-muted-foreground">or email</span>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Name (Optional)</Label>
+              <Label htmlFor="name">Name (optional)</Label>
               <Input
                 id="name"
                 type="text"
-                placeholder="John Doe"
+                placeholder="Jane Doe"
                 value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 disabled={isLoading}
               />
             </div>
@@ -173,9 +149,7 @@ export default function RegisterPage() {
                 type="email"
                 placeholder="you@example.com"
                 value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
                 disabled={isLoading}
               />
@@ -186,7 +160,7 @@ export default function RegisterPage() {
               <Input
                 id="password"
                 type="password"
-                placeholder="Enter a strong password"
+                placeholder="Use a strong password"
                 value={formData.password}
                 onChange={(e) => handlePasswordChange(e.target.value)}
                 required
@@ -194,23 +168,11 @@ export default function RegisterPage() {
               />
 
               {formData.password && (
-                <div className="mt-2 p-3 bg-muted rounded-md space-y-1">
-                  <PasswordCheck
-                    passed={passwordChecks.length}
-                    text="At least 8 characters"
-                  />
-                  <PasswordCheck
-                    passed={passwordChecks.uppercase}
-                    text="One uppercase letter"
-                  />
-                  <PasswordCheck
-                    passed={passwordChecks.lowercase}
-                    text="One lowercase letter"
-                  />
-                  <PasswordCheck
-                    passed={passwordChecks.number}
-                    text="One number"
-                  />
+                <div className="space-y-1 rounded-xl border border-border/80 bg-background/70 p-3">
+                  <PasswordCheck passed={passwordChecks.length} text="Minimum 8 characters" />
+                  <PasswordCheck passed={passwordChecks.uppercase} text="At least one uppercase letter" />
+                  <PasswordCheck passed={passwordChecks.lowercase} text="At least one lowercase letter" />
+                  <PasswordCheck passed={passwordChecks.number} text="At least one number" />
                 </div>
               )}
             </div>
@@ -220,51 +182,39 @@ export default function RegisterPage() {
               <Input
                 id="confirmPassword"
                 type="password"
-                placeholder="Re-enter your password"
+                placeholder="Re-enter password"
                 value={formData.confirmPassword}
-                onChange={(e) =>
-                  setFormData({ ...formData, confirmPassword: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                 required
                 disabled={isLoading}
               />
-              {formData.confirmPassword &&
-                formData.password !== formData.confirmPassword && (
-                  <p className="text-sm text-red-600">Passwords do not match</p>
-                )}
+              {formData.confirmPassword && formData.password !== formData.confirmPassword && (
+                <p className="text-xs text-rose-600">Passwords do not match</p>
+              )}
             </div>
 
             <Button
               type="submit"
               className="w-full"
-              disabled={
-                isLoading ||
-                !isPasswordValid ||
-                formData.password !== formData.confirmPassword
-              }
+              disabled={isLoading || !isPasswordValid || formData.password !== formData.confirmPassword}
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                   Creating account...
                 </>
               ) : (
-                "Create Account with Email"
+                "Create Account"
               )}
             </Button>
           </form>
 
-          <div className="text-center text-sm text-muted-foreground">
-            By signing up, you agree to track your LeetCode progress obsessively
-            😄
-          </div>
-
-          <div className="text-center text-sm">
+          <p className="text-center text-sm text-muted-foreground">
             Already have an account?{" "}
-            <Link href="/login" className="text-primary hover:underline">
+            <Link href="/login" className="font-semibold text-foreground hover:underline">
               Sign in
             </Link>
-          </div>
+          </p>
         </CardContent>
       </Card>
     </div>
